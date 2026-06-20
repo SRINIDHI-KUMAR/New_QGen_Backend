@@ -1,15 +1,36 @@
-import mongoose from 'mongoose';
+import { Router } from 'express';
+import Subject from '../models/Subject.js';
+import { verifyToken } from '../middlewares/auth.js';
 
-const subjectSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-  subjectName: { type: String, required: true },
-  faissIndexPath: { type: String, required: true },
-  contextCache: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now },
-  expiresAt: { type: Date }
+const router = Router();
+
+// GET /subjects – list all subjects for the logged‑in user
+router.get('/subjects', verifyToken, async (req, res) => {
+  try {
+    const subjects = await Subject.find(
+      { userId: req.userId },
+      'subjectName createdAt'
+    );
+    res.json(subjects);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch subjects' });
+  }
 });
 
-// Compound index to ensure one subject per user per name
-subjectSchema.index({ userId: 1, subjectName: 1 }, { unique: true });
+// GET /subjects/:subjectName – get a single subject
+router.get('/subjects/:subjectName', verifyToken, async (req, res) => {
+  try {
+    const subject = await Subject.findOne({
+      userId: req.userId,
+      subjectName: req.params.subjectName,
+    });
+    if (!subject) return res.status(404).json({ error: 'Subject not found' });
+    res.json(subject);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch subject' });
+  }
+});
 
-export default mongoose.model('Subject', subjectSchema);
+export default router;

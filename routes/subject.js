@@ -4,7 +4,7 @@ import { verifyToken } from '../middlewares/auth.js';
 
 const router = Router();
 
-// GET /subjects – list all subjects for the logged‑in user
+// GET /subjects – protected
 router.get('/subjects', verifyToken, async (req, res) => {
   try {
     const subjects = await Subject.find(
@@ -18,7 +18,7 @@ router.get('/subjects', verifyToken, async (req, res) => {
   }
 });
 
-// GET /subjects/:subjectName – get a single subject
+// GET /subjects/:subjectName – single subject detail
 router.get('/subjects/:subjectName', verifyToken, async (req, res) => {
   try {
     const subject = await Subject.findOne({

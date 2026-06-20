@@ -7,6 +7,7 @@ import { compileContextCache } from '../services/cacheService.js';
 import Subject from '../models/Subject.js';
 import path from 'path';
 import { verifyToken } from '../middlewares/auth.js';
+
 const router = Router();
 
 // POST /subjects/upload – protected
@@ -41,7 +42,7 @@ router.post(
         allChunks.push(...pyqChunks);
       }
 
-      const userId = req.userId; // from token
+      const userId = req.userId;
       const safeSubject = subjectName.toLowerCase().replace(/\s+/g, '_');
       const faissDir = path.join(process.cwd(), 'vectorstore', `${userId}_${safeSubject}`);
       await createAndSaveFAISS(allChunks, faissDir);
@@ -71,10 +72,18 @@ router.post(
   }
 );
 
-// GET /subjects – protected
+// GET /subjects – protected (only this one definition)
 router.get('/subjects', verifyToken, async (req, res) => {
-  const subjects = await Subject.find({ userId: req.userId }, 'subjectName createdAt');
-  res.json(subjects);
+  try {
+    const subjects = await Subject.find(
+      { userId: req.userId },
+      'subjectName createdAt'
+    );
+    res.json(subjects);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch subjects' });
+  }
 });
 
 export default router;

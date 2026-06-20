@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const subjectSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   subjectName: { type: String, required: true },
   faissIndexPath: { type: String, required: true },
   contextCache: { type: String, required: true },
@@ -9,7 +9,7 @@ const subjectSchema = new mongoose.Schema({
   expiresAt: { type: Date }
 });
 
-// Compound index to ensure one subject per user per name
+// One subject per user per name
 subjectSchema.index({ userId: 1, subjectName: 1 }, { unique: true });
 
 export default mongoose.model('Subject', subjectSchema);

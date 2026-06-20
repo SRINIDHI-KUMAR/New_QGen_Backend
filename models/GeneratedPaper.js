@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const generatedPaperSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   subject: { type: String, required: true },
   difficulty: { type: String, required: true },
   paper: { type: String, required: true },

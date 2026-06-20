@@ -4,7 +4,6 @@ import { generateToken } from '../middlewares/auth.js';
 
 const router = Router();
 
-// POST /register
 router.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -13,7 +12,7 @@ router.post('/register', async (req, res) => {
     }
     const existing = await User.findOne({ $or: [{ email }, { username }] });
     if (existing) {
-      return res.status(400).json({ error: 'User with that email or username already exists' });
+      return res.status(400).json({ error: 'User already exists' });
     }
     const user = new User({ username, email, password });
     await user.save();
@@ -25,7 +24,6 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// POST /login
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;

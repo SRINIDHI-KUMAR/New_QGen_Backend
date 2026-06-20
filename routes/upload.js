@@ -10,7 +10,6 @@ import { verifyToken } from '../middlewares/auth.js';
 
 const router = Router();
 
-// POST /subjects/upload – protected
 router.post(
   '/subjects/upload',
   verifyToken,
@@ -30,16 +29,13 @@ router.post(
 
       const allChunks = [];
       if (syllabusText) {
-        const syllabusChunks = await chunkText(syllabusText, { subject: subjectName, source: 'syllabus' });
-        allChunks.push(...syllabusChunks);
+        allChunks.push(...(await chunkText(syllabusText, { subject: subjectName, source: 'syllabus' })));
       }
       if (textbookText) {
-        const textbookChunks = await chunkText(textbookText, { subject: subjectName, source: 'textbook' });
-        allChunks.push(...textbookChunks);
+        allChunks.push(...(await chunkText(textbookText, { subject: subjectName, source: 'textbook' })));
       }
       if (pyqText) {
-        const pyqChunks = await chunkText(pyqText, { subject: subjectName, source: 'pyqs' });
-        allChunks.push(...pyqChunks);
+        allChunks.push(...(await chunkText(pyqText, { subject: subjectName, source: 'pyqs' })));
       }
 
       const userId = req.userId;
@@ -56,12 +52,7 @@ router.post(
         existing.createdAt = new Date();
         await existing.save();
       } else {
-        await Subject.create({
-          userId,
-          subjectName,
-          faissIndexPath: faissDir,
-          contextCache
-        });
+        await Subject.create({ userId, subjectName, faissIndexPath: faissDir, contextCache });
       }
 
       res.json({ message: 'Subject uploaded and processed successfully', subjectName });
@@ -72,18 +63,9 @@ router.post(
   }
 );
 
-// GET /subjects – protected (only this one definition)
 router.get('/subjects', verifyToken, async (req, res) => {
-  try {
-    const subjects = await Subject.find(
-      { userId: req.userId },
-      'subjectName createdAt'
-    );
-    res.json(subjects);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to fetch subjects' });
-  }
+  const subjects = await Subject.find({ userId: req.userId }, 'subjectName createdAt');
+  res.json(subjects);
 });
 
 export default router;

@@ -1,19 +1,15 @@
-import { Router } from 'express';
-import Subject from '../models/Subject.js';
+import mongoose from 'mongoose';
 
-const router = Router();
-
-// GET /subjects – list all subjects
-router.get('/subjects', async (req, res) => {
-  const subjects = await Subject.find({}, 'subjectName createdAt');
-  res.json(subjects);
+const subjectSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  subjectName: { type: String, required: true },
+  faissIndexPath: { type: String, required: true },
+  contextCache: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now },
+  expiresAt: { type: Date }
 });
 
-// GET /subjects/:name – get subject details
-router.get('/subjects/:name', async (req, res) => {
-  const subject = await Subject.findOne({ subjectName: req.params.name });
-  if (!subject) return res.status(404).json({ error: 'Subject not found' });
-  res.json(subject);
-});
+// Compound index to ensure one subject per user per name
+subjectSchema.index({ userId: 1, subjectName: 1 }, { unique: true });
 
-export default router;
+export default mongoose.model('Subject', subjectSchema);
